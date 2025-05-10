@@ -2,15 +2,22 @@ import streamlit as st
 import pandas as pd
 import re
 
-st.title("Clinician Assignment Summary")
+# ---- SIMPLE PASSWORD GATE ----
+st.title("Clinician Assignment Summary (Private)")
+password = st.text_input("Enter password:", type="password")
 
+if password != "YourSecurePassword123":
+    st.warning("Access denied. Please enter the correct password.")
+    st.stop()
+
+# ---- MAIN APP CODE ----
 uploaded_file = st.file_uploader("Upload Monthly Schedule Export", type=["xlsx"])
 
 def is_valid_assignment(assignment):
     if isinstance(assignment, str):
         if re.search(r'\b(?:OR|AC|SCCA|VAC|Call|OnDeck|NORA|TX|RAD|FETAL|PAIN|SDU|CNSLT|F/U)\b', assignment):
             return True
-        if re.search(r'\d{2}:\d{2}', assignment):  # time indicator
+        if re.search(r'\d{2}:\d{2}', assignment):
             return True
         if assignment.strip() in {"VAC", "LOA", "CON", "OR", "AC", "PC", "LATE", "NoCall"}:
             return True
@@ -35,9 +42,4 @@ if uploaded_file:
     st.dataframe(summary)
 
     csv = summary.reset_index().to_csv(index=False).encode('utf-8')
-    st.download_button(
-        label="Download Summary as CSV",
-        data=csv,
-        file_name='clinician_assignment_summary.csv',
-        mime='text/csv',
-    )
+    st.download_button("Download Summary as CSV", data=csv, file_name="assignment_summary.csv", mime="text/csv")
